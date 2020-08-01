@@ -191,7 +191,7 @@ contract BulkCheckout is
     }
 
     /**
-     * @notice Bulk gitcoin grant donations but with the permit parameters of tokens that dailike permit function(i.e. DAI or CHAI)
+     * @notice Bulk gitcoin grant donations but with the permit parameters of tokens that has dailike permit function(i.e. DAI or CHAI)
      * @dev We assume all token approvals were already executed
      * @param _donations Array of donation structs
      *@param _daiLikePermits Array of permits
@@ -204,6 +204,12 @@ contract BulkCheckout is
         _donate(_donations);
     }
 
+    /**
+     * @notice Bulk gitcoin grant donations but with the permit parameters of tokens that has EIP2612LikePermits permit function(i.e. Uniswap LP)
+     * @dev We assume all token approvals were already executed
+     * @param _donations Array of donation structs
+     *@param  _EIP2612LikePermits Array of permits
+     */
     function permitAndDonate(
         Donation[] calldata _donations,
         EIP2612LikePermit[] calldata _EIP2612LikePermits

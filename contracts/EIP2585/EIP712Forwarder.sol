@@ -12,36 +12,43 @@
  * You should have received a copy of the CC0 Public Domain Dedication along
  * with this software. If not, see
  * <https://creativecommons.org/publicdomain/zero/1.0/>.
- *    
- *       .-''-.  .-./`) .-------.               .`````-.  ,--------.     .-''''-.  ,--------.   
- *     .'_ _   \ \ .-.')\  _(`)_ \             /   ,-.  \ |   _____|    /  _--.  \ |   _____|   
- *    / ( ` )   '/ `-' \| (_ o._)|            (___/  |   ||  )          |_( )_ ' | |  )         
- *   . (_ o _)  | `-'`"`|  (_,_) /_ _    _ _        .'  / |  '----.     (_ o _). / |  '----.    
- *   |  (_,_)___| .---. |   '-.-'( ' )--( ' )   _.-'_.-'  |_.._ _  '.  .'(_,_).  `.|_.._ _  '.  
- *   '  \   .---. |   | |   |   (_{;}_)(_{;}_)_/_  .'        ( ' )   \|_( )_    \  |  ( ' )   \ 
- *    \  `-'    / |   | |   |    (_,_)--(_,_)( ' )(__..--. _(_{;}_)  |(_ o _)   /  |_(_{;}_)  | 
- *     \       /  |   | /   )               (_{;}_)      ||  (_,_)  /  (_,_)..-' .'|  (_,_)  /  
- *      `'-..-'   '---' `---'                (_,_)-------' `...__..'     `-....-'   `...__..'   
- *                                                                                           
+ *
+ *       .-''-.  .-./`) .-------.               .`````-.  ,--------.     .-''''-.  ,--------.
+ *     .'_ _   \ \ .-.')\  _(`)_ \             /   ,-.  \ |   _____|    /  _--.  \ |   _____|
+ *    / ( ` )   '/ `-' \| (_ o._)|            (___/  |   ||  )          |_( )_ ' | |  )
+ *   . (_ o _)  | `-'`"`|  (_,_) /_ _    _ _        .'  / |  '----.     (_ o _). / |  '----.
+ *   |  (_,_)___| .---. |   '-.-'( ' )--( ' )   _.-'_.-'  |_.._ _  '.  .'(_,_).  `.|_.._ _  '.
+ *   '  \   .---. |   | |   |   (_{;}_)(_{;}_)_/_  .'        ( ' )   \|_( )_    \  |  ( ' )   \
+ *    \  `-'    / |   | |   |    (_,_)--(_,_)( ' )(__..--. _(_{;}_)  |(_ o _)   /  |_(_{;}_)  |
+ *     \       /  |   | /   )               (_{;}_)      ||  (_,_)  /  (_,_)..-' .'|  (_,_)  /
+ *      `'-..-'   '---' `---'                (_,_)-------' `...__..'     `-....-'   `...__..'
+ *
  */
 pragma solidity 0.6.4;
 pragma experimental ABIEncoderV2;
 
 interface ERC1271 {
-    function isValidSignature(bytes calldata data, bytes calldata signature) external view returns (bytes4 magicValue);
+    function isValidSignature(bytes calldata data, bytes calldata signature)
+        external
+        view
+        returns (bytes4 magicValue);
 }
 
 interface ERC1654 {
-   function isValidSignature(bytes32 hash, bytes calldata signature) external view returns (bytes4 magicValue);
+    function isValidSignature(bytes32 hash, bytes calldata signature)
+        external
+        view
+        returns (bytes4 magicValue);
 }
 
 interface ReplayProtection {
-    function checkAndUpdateNonce(address signer, bytes calldata nonce) external returns (bool);
+    function checkAndUpdateNonce(address signer, bytes calldata nonce)
+        external
+        returns (bool);
 }
 
 interface Forwarder {
-
-    enum SignatureType { DIRECT, EIP1654, EIP1271 }
+    enum SignatureType {DIRECT, EIP1654, EIP1271}
 
     struct Message {
         address from;
@@ -51,7 +58,7 @@ interface Forwarder {
         bytes nonce;
         bytes data;
         bytes32 innerMessageHash;
-	}
+    }
 
     function forward(
         Message calldata message,
@@ -61,7 +68,11 @@ interface Forwarder {
 }
 
 library SigUtil {
-    function recover(bytes32 hash, bytes memory sig) internal pure returns (address recovered) {
+    function recover(bytes32 hash, bytes memory sig)
+        internal
+        pure
+        returns (address recovered)
+    {
         require(sig.length == 65, "SIGNATURE_INVALID_LENGTH");
 
         bytes32 r;
@@ -83,18 +94,28 @@ library SigUtil {
         require(recovered != address(0), "SIGNATURE_ZERO_ADDRESS");
     }
 
-    function eth_sign_prefix(bytes32 hash) internal pure returns (bytes memory) {
+    function eth_sign_prefix(bytes32 hash)
+        internal
+        pure
+        returns (bytes memory)
+    {
         return abi.encodePacked("\x19Ethereum Signed Message:\n32", hash);
     }
 }
 
 /// @notice Forwarder for Meta Transactions Using EIP712 Signing Standard, also implement default Replay Protection using 2 dimensional nonces
 contract EIP712Forwarder is Forwarder, ReplayProtection {
-
     // ///////////////////////////// FORWARDING EOA META TRANSACTION ///////////////////////////////////
 
     bytes4 internal constant ERC1271_MAGICVALUE = 0x20c13b0b;
     bytes4 internal constant ERC1654_MAGICVALUE = 0x1626ba7e;
+
+    uint256 chainId;
+
+    //Matic has some problem with the chainId opcode thats why I made this constructor(TODO do some more research)
+    constructor(uint256 _chainId) public {
+        chainId = _chainId;
+    }
 
     /// @notice forward call from EOA signed message
     /// @param message.from address from which the message come from (For EOA this is the same as signer)
@@ -109,20 +130,32 @@ contract EIP712Forwarder is Forwarder, ReplayProtection {
         Message memory message,
         SignatureType signatureType,
         bytes memory signature
-    ) public override payable { // external with ABIEncoderV2 Struct is not supported in solidity < 0.6.4
+    ) public override payable {
+        // external with ABIEncoderV2 Struct is not supported in solidity < 0.6.4
         require(_isValidChainId(message.chainId), "INVALID_CHAIN_ID");
         _checkSigner(message, signatureType, signature);
         // optimization to avoid call if using default nonce strategy
         // this contract implements a default nonce strategy and can be called directly
-        if (message.replayProtection == address(0) || message.replayProtection == address(this)) {
-            require(checkAndUpdateNonce(message.from, message.nonce), "NONCE_INVALID");
+        if (
+            message.replayProtection == address(0) ||
+            message.replayProtection == address(this)
+        ) {
+            require(
+                checkAndUpdateNonce(message.from, message.nonce),
+                "NONCE_INVALID"
+            );
         } else {
-            require(ReplayProtection(message.replayProtection).checkAndUpdateNonce(message.from, message.nonce), "NONCE_INVALID");
+            require(
+                ReplayProtection(message.replayProtection).checkAndUpdateNonce(
+                    message.from,
+                    message.nonce
+                ),
+                "NONCE_INVALID"
+            );
         }
 
         _call(message.from, message.to, msg.value, message.data);
     }
-
 
     // /////////////////////////////////// BATCH CALL /////////////////////////////////////
 
@@ -134,13 +167,19 @@ contract EIP712Forwarder is Forwarder, ReplayProtection {
 
     /// @notice batcher function that can be called as part of a meta transaction (allowing to batch call atomically)
     /// @param calls list of call data and destination
-    function batch(Call[] memory calls) public payable { // external with ABIEncoderV2 Struct is not supported in solidity < 0.6.4
+    function batch(Call[] memory calls) public payable {
+        // external with ABIEncoderV2 Struct is not supported in solidity < 0.6.4
         require(msg.sender == address(this), "FORWARDER_ONLY");
         address signer;
         bytes memory data = msg.data;
         uint256 length = msg.data.length;
-        assembly { signer := and(mload(sub(add(data, length), 0x00)), 0xffffffffffffffffffffffffffffffffffffffff) }
-        for(uint256 i = 0; i < calls.length; i++) {
+        assembly {
+            signer := and(
+                mload(sub(add(data, length), 0x00)),
+                0xffffffffffffffffffffffffffffffffffffffff
+            )
+        }
+        for (uint256 i = 0; i < calls.length; i++) {
             _call(signer, calls[i].to, calls[i].value, calls[i].data);
         }
     }
@@ -152,7 +191,11 @@ contract EIP712Forwarder is Forwarder, ReplayProtection {
     /// @notice implement a default nonce stategy
     /// @param signer address to check and update nonce for
     /// @param nonce value of nonce sent as part of the forward call
-    function checkAndUpdateNonce(address signer, bytes memory nonce) public override returns (bool) {
+    function checkAndUpdateNonce(address signer, bytes memory nonce)
+        public
+        override
+        returns (bool)
+    {
         // TODO? default nonce strategy could be different (maybe the most versatile : batchId + Nonce)
         uint256 value = abi.decode(nonce, (uint256));
         uint128 batchId = uint128(value / 2**128);
@@ -166,10 +209,13 @@ contract EIP712Forwarder is Forwarder, ReplayProtection {
         return false;
     }
 
-    function getNonce(address signer, uint128 batchId) external view returns (uint128) {
+    function getNonce(address signer, uint128 batchId)
+        external
+        view
+        returns (uint128)
+    {
         return _batches[signer][batchId];
     }
-
 
     // ///////////////////////////////// INTERNAL ////////////////////////////////////////////
 
@@ -179,7 +225,7 @@ contract EIP712Forwarder is Forwarder, ReplayProtection {
         uint256 value,
         bytes memory data
     ) internal {
-        (bool success,) = to.call.value(value)(abi.encodePacked(data, from));
+        (bool success, ) = to.call.value(value)(abi.encodePacked(data, from));
         if (!success) {
             assembly {
                 let returnDataSize := returndatasize()
@@ -196,18 +242,26 @@ contract EIP712Forwarder is Forwarder, ReplayProtection {
     ) internal view returns (address) {
         bytes memory dataToHash = _encodeMessage(message);
         if (signatureType == SignatureType.EIP1271) {
-            require(ERC1271(message.from).isValidSignature(dataToHash, signature) == ERC1271_MAGICVALUE, "SIGNATURE_1271_INVALID");
-        } else if(signatureType == SignatureType.EIP1654){
-            require(ERC1654(message.from).isValidSignature(keccak256(dataToHash), signature) == ERC1654_MAGICVALUE, "SIGNATURE_1654_INVALID");
+            require(
+                ERC1271(message.from).isValidSignature(dataToHash, signature) ==
+                    ERC1271_MAGICVALUE,
+                "SIGNATURE_1271_INVALID"
+            );
+        } else if (signatureType == SignatureType.EIP1654) {
+            require(
+                ERC1654(message.from).isValidSignature(
+                    keccak256(dataToHash),
+                    signature
+                ) == ERC1654_MAGICVALUE,
+                "SIGNATURE_1654_INVALID"
+            );
         } else {
             address signer = SigUtil.recover(keccak256(dataToHash), signature);
             require(signer == message.from, "SIGNATURE_WRONG_SIGNER");
         }
     }
 
-    function _isValidChainId(uint256 chainId) internal view returns (bool) {
-        uint256 _chainId;
-        assembly {_chainId := chainid() }
+    function _isValidChainId(uint256 _chainId) internal view returns (bool) {
         return chainId == _chainId;
     }
 
@@ -226,21 +280,28 @@ contract EIP712Forwarder is Forwarder, ReplayProtection {
         "MetaTransaction(address from,address to,uint256 value,uint256 chainId,address replayProtection,bytes nonce,bytes data,bytes32 innerMessageHash)"
     );
 
-    function _encodeMessage(Message memory message) internal view returns (bytes memory) {
-        return abi.encodePacked(
-            "\x19\x01",
-            DOMAIN_SEPARATOR,
-            keccak256(abi.encode(
-                METATRANSACTION_TYPEHASH,
-                message.from,
-                message.to,
-                msg.value,
-                message.chainId,
-                message.replayProtection,
-                keccak256(message.nonce),
-                keccak256(message.data),
-                message.innerMessageHash
-            ))
-        );
+    function _encodeMessage(Message memory message)
+        internal
+        view
+        returns (bytes memory)
+    {
+        return
+            abi.encodePacked(
+                "\x19\x01",
+                DOMAIN_SEPARATOR,
+                keccak256(
+                    abi.encode(
+                        METATRANSACTION_TYPEHASH,
+                        message.from,
+                        message.to,
+                        msg.value,
+                        message.chainId,
+                        message.replayProtection,
+                        keccak256(message.nonce),
+                        keccak256(message.data),
+                        message.innerMessageHash
+                    )
+                )
+            );
     }
 }
