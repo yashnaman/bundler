@@ -1,0 +1,30 @@
+{
+  "name": "bundler",
+  "version": "1.0.0",
+  "description": "A bulk checkout just like gitcoin grants but with some features added",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "truffle test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yashnaman/bundler.git"
+  },
+  "keywords": [
+    "ethereum",
+    "blockchain"
+  ],
+  "author": "https://github.com/yashnaman",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yashnaman/bundler/issues"
+  },
+  "homepage": "https://github.com/yashnaman/bundler#readme",
+  "devDependencies": {
+    "@openzeppelin/contracts": "^3.1.0",
+    "@openzeppelin/test-helpers": "^0.5.6"
+  }
+}
