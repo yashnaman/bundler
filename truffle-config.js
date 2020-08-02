@@ -105,4 +105,7 @@ module.exports = {
       // }
     },
   },
+  mocha: {
+    reporter: "eth-gas-reporter",
+  },
 };

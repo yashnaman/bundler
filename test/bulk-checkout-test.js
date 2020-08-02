@@ -946,4 +946,6 @@ contract("BulkCheckout", (accounts) => {
     expect(fromWei(await dai.balanceOf(grant2))).to.equal("10");
     expect(fromWei(await univ2.balanceOf(grant3))).to.equal("25");
   });
+
+  //TODO add tests for gasless transactions using the EIP2585 forwarder contract
 });

@@ -196,6 +196,8 @@ contract BulkCheckout is
      * @param _donations Array of donation structs
      *@param _daiLikePermits Array of permits
      */
+    // These next three methods should be overloaded but I didn't how to write truffle tests
+    //for overloaded methods without using .sendTransaction which is not so readable()
     function permitAndDonate1(
         Donation[] calldata _donations,
         DaiLikePermit[] calldata _daiLikePermits
