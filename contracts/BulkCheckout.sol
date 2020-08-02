@@ -196,7 +196,7 @@ contract BulkCheckout is
      * @param _donations Array of donation structs
      *@param _daiLikePermits Array of permits
      */
-    function permitAndDonate(
+    function permitAndDonate1(
         Donation[] calldata _donations,
         DaiLikePermit[] calldata _daiLikePermits
     ) external payable nonReentrant whenNotPaused {
@@ -210,7 +210,7 @@ contract BulkCheckout is
      * @param _donations Array of donation structs
      *@param  _EIP2612LikePermits Array of permits
      */
-    function permitAndDonate(
+    function permitAndDonate2(
         Donation[] calldata _donations,
         EIP2612LikePermit[] calldata _EIP2612LikePermits
     ) external payable nonReentrant whenNotPaused {
@@ -218,7 +218,7 @@ contract BulkCheckout is
         _donate(_donations);
     }
 
-    function permitAndDonate(
+    function permitAndDonate3(
         Donation[] calldata _donations,
         DaiLikePermit[] calldata _daiLikePermits,
         EIP2612LikePermit[] calldata _EIP2612LikePermits

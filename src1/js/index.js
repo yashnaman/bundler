@@ -184,7 +184,7 @@ const connectWallet = async function () {
         }
         if (netowrkName == 'matic') {
             biconomy = new Biconomy(window.ethereum, {
-                apiKey: 'Q34QBan9O.1fb12039-9bbe-45d2-a1f9-22cbb2636fe9',
+                apiKey: '43lNBVjhk.b269dd5c-2944-4bb2-b4a6-f1d5f42b95a1',
                 debug: 'true',
             })
             web3 = new Web3(biconomy)
