@@ -8,9 +8,9 @@ config.ropsten = {
 }
 config.matic = {
     daiLikeERC20: '0x702e5c714AeCf0C45A680BD2821c281891646D48',
-    eip2612LikeERC20: '0x65aceDc587d3cA86b2b43db79C1E8a7527b0555a',
-    forwarder: '0x641d567874afD77B9318bDDb7Ea666416D41B96f',
-    bundler: '0x4E52dEb55357d547140713b687E25a0D9803e37c',
+    eip2612LikeERC20: '0xe314Aa0Db4dF0043Fa1E494E869c35263e2bA893',
+    forwarder: '0x9351d2a3d8a46a28b35BC8b8F7834172E7eC72f2',
+    bundler: '0xB026460660ECfCA90d50ee25560aef3Bcf61a3b1',
 }
 
 config.contract = {

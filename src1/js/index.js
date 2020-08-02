@@ -44,39 +44,7 @@ const domainData = {
 let domainDataERC20 = {
     version: '1',
 }
-const showFaucetLink = function () {
-    if (netowrkName == 'ropsten') {
-        mDAILink = 'https://oneclickdapp.com/cecilia-crash/'
-        MANALink = 'https://oneclickdapp.com/velvet-papa/'
-    }
-    if (netowrkName == 'matic') {
-        mDAILink = 'https://oneclickdapp.com/alias-type/'
-        MANALink = 'https://oneclickdapp.com/street-mineral/'
-    }
-    var a = document.createElement('a')
-    a.href = mDAILink
-    a.title = 'faucet'
-    a.target = '_blank'
-    var link = document.createTextNode('mDAI faucet')
-    a.appendChild(link)
 
-    var x = document.createElement('LABEL')
-    var t = document.createTextNode(
-        '  :mint yourself 10000000000000000000 to be equal to 10 (Because of decimals): This action is not gasless'
-    )
-    x.appendChild(t)
-    var a1 = document.createElement('a')
-    a1.href = MANALink
-    a1.title = 'faucet'
-    a1.target = '_blank'
-    var link1 = document.createTextNode('MANA faucet')
-    a1.appendChild(link1)
-    document.body.prepend(x)
-    var br = document.createElement('br')
-    a1.appendChild(br)
-    document.body.prepend(a)
-    document.body.prepend(a1)
-}
 const forwarderEIP2585 = async function (_data) {
     var EIP712ForwarderContract = new web3.eth.Contract(
         config.contract.EIP712forwarderABI,
@@ -160,7 +128,7 @@ const forwarderEIP2585 = async function (_data) {
                 }
                 if (netowrkName == 'matic') {
                     tempString =
-                        'https://testnetv3-explorer.matic.network/tx/' + hash
+                        'https://mumbai-explorer.matic.today/tx/' + hash
                 }
                 a.href = tempString
                 a.title = tempString
