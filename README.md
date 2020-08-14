@@ -8,3 +8,5 @@ Description : https://medium.com/@shahyashs145/making-gitcoin-grants-gasless-bf9
 
 
 Demo : https://www.youtube.com/watch?v=bhZ3jWyqNvY&t=155s
+
+To recreate the demo you will need to deploy your own contracts and change the contract addresses in the src1/js/config.js file
